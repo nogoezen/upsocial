@@ -1,9 +1,11 @@
+// Importation des dépendances nécessaires
 import * as z from "zod";
 import { Models } from "appwrite";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+// Importation des composants UI personnalisés
 import {
   Form,
   FormControl,
@@ -21,15 +23,19 @@ import { useUserContext } from "@/context/AuthContext";
 import { FileUploader, Loader } from "@/components/shared";
 import { useCreatePost, useUpdatePost } from "@/lib/react-query/queries";
 
+// Définition des props du composant PostForm
 type PostFormProps = {
   post?: Models.Document;
   action: "Create" | "Update";
 };
 
+// Composant principal PostForm
 const PostForm = ({ post, action }: PostFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useUserContext();
+
+  // Configuration du formulaire avec react-hook-form et zod
   const form = useForm<z.infer<typeof PostValidation>>({
     resolver: zodResolver(PostValidation),
     defaultValues: {
@@ -40,15 +46,15 @@ const PostForm = ({ post, action }: PostFormProps) => {
     },
   });
 
-  // Query
+  // Hooks pour les mutations de création et de mise à jour de post
   const { mutateAsync: createPost, isLoading: isLoadingCreate } =
     useCreatePost();
   const { mutateAsync: updatePost, isLoading: isLoadingUpdate } =
     useUpdatePost();
 
-  // Handler
+  // Gestionnaire de soumission du formulaire
   const handleSubmit = async (value: z.infer<typeof PostValidation>) => {
-    // ACTION = UPDATE
+    // Cas de mise à jour d'un post existant
     if (post && action === "Update") {
       const updatedPost = await updatePost({
         ...value,
@@ -65,7 +71,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
       return navigate(`/posts/${post.$id}`);
     }
 
-    // ACTION = CREATE
+    // Cas de création d'un nouveau post
     const newPost = await createPost({
       ...value,
       userId: user.id,
@@ -79,11 +85,13 @@ const PostForm = ({ post, action }: PostFormProps) => {
     navigate("/");
   };
 
+  // Rendu du formulaire
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex flex-col gap-9 w-full  max-w-5xl">
+        {/* Champ pour la légende */}
         <FormField
           control={form.control}
           name="caption"
@@ -101,6 +109,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
           )}
         />
 
+        {/* Champ pour l'upload de fichier */}
         <FormField
           control={form.control}
           name="file"
@@ -118,6 +127,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
           )}
         />
 
+        {/* Champ pour la localisation */}
         <FormField
           control={form.control}
           name="location"
@@ -132,6 +142,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
           )}
         />
 
+        {/* Champ pour les tags */}
         <FormField
           control={form.control}
           name="tags"
@@ -153,6 +164,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
           )}
         />
 
+        {/* Boutons de soumission et d'annulation */}
         <div className="flex gap-4 items-center justify-end">
           <Button
             type="button"
